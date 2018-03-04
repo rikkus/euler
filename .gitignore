@@ -1,6 +1,10 @@
 /_build
 /cover
 /deps
+*/_build
 erl_crash.dump
 *.ez
 *.beam
+.DS_Store
+dialyzer_*
+dialyxir_*
