@@ -42,7 +42,7 @@ defmodule Euler do
   # digits."
   @spec harshad?(integer) :: boolean
   def harshad?(n), do: divisible_by?(n, sum_digits(n))
-
+ 
   # "Let's call a Harshad number that, while recursively truncating the last
   # digit, always results in a Harshad number a right truncatable Harshad
   # number."
@@ -64,7 +64,9 @@ defmodule Euler do
 
   @spec strong_right_truncatable_harshad_number?(integer) :: boolean
   def strong_right_truncatable_harshad_number?(n) do
-    harshad?(n) && strong_harshad?(n) && right_truncatable_harshad?(n)
+    h = harshad?(n)
+    IO.inspect {:is_harshad, n, h}
+    h && strong_harshad?(n) && right_truncatable_harshad?(n)
   end
 
   # "Now take the number 2011 which is prime. When we truncate the last digit
@@ -88,7 +90,48 @@ defmodule Euler do
     |> Enum.take_while(fn n -> n < upper_bound end)
     |> Enum.filter(&right_truncatable?/1)
     |> Enum.filter(&strong_right_truncatable_harshad_prime?/1)
-    |> IO.inspect
-    |> Enum.sum()
+    |> Enum.to_list #|> Enum.sum()
   end
+
+  def right_truncatable_harshad_prime_sequence(limit) do
+    1..9 |> Enum.flat_map(fn(n) -> right_truncatable_harshad_sequence({n, false}, limit) end)
+  end
+
+  def right_truncatable_harshad_sequence({n, strong}, limit) do
+    IO.inspect {:right_truncatable_harshad, n}
+    Enum.concat(
+      strong_right_truncatable_harshad_numbers(n, limit),
+      0..9
+      |> Enum.map(fn(digit) -> n * 10 + digit end)
+      |> Enum.filter(fn(new) -> new < limit end)
+      |> Enum.filter(&harshad?/1)
+      |> Enum.flat_map(fn(new) -> right_truncatable_harshad_sequence(new, limit) end)
+    )
+  end
+
+  def strong_right_truncatable_harshad_numbers(base, limit) do
+    0..9
+    |> Enum.map(fn(digit) -> base * 10 + digit end)
+    |> Enum.filter(fn(new) -> new < limit end)
+    |> Enum.filter(&harshad?/1)
+    |> Enum.filter(&Prime.prime?/1)
+    |> Enum.flat_map(fn(new) -> primes_with_right_truncatable_harshad_base(new, limit) end)
+  end
+
+  def primes_with_right_truncatable_harshad_base(base, limit) do
+    0..9
+    |> Enum.map(fn(digit) -> base * 10 + digit end)
+    |> Enum.filter(fn(new) -> new < limit end)
+    |> Enum.filter(&Prime.prime?/1)
+  end
+
+  @spec solve(integer, :optimised) :: integer
+  def solve(upper_bound, :optimised) do
+    IO.inspect {:solve, upper_bound}
+    right_truncatable_harshad_prime_sequence(upper_bound)
+    |> Enum.sort
+    |> IO.inspect
+    |> Enum.sum
+  end
+
 end
