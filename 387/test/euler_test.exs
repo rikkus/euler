@@ -6,7 +6,7 @@ defmodule EulerTest do
     assert Euler.harshad?(201)
   end
 
-  test "Hardy–Ramanujan number (1729) is a Harshad number" do
+  test "Hardy-Ramanujan number (1729) is a Harshad number" do
     assert Euler.harshad?(1729)
   end
 
@@ -78,49 +78,11 @@ defmodule EulerTest do
            |> Enum.to_list
   end
 
-  test "201 right-truncated is 20" do
-    assert 20 == Euler.right_truncate(201)
-  end
-
-  test "20 right-truncated is 2" do
-    assert 2 == Euler.right_truncate(20)
-  end
-
-  test "2 right-truncated isn't possible" do
-    assert_raise ArgumentError, "Not right-truncatable: 2", fn -> Euler.right_truncate(2) end
-  end
-
-  test "recursive_right_truncate recursively right-truncates" do
-    assert [201, 20, 2] == Euler.recursive_right_truncate(2011) |> Enum.to_list()
-  end
-
-  test "201 is right truncatable Harshad number" do
-    assert Euler.right_truncatable_harshad?(201)
-  end
-
-  test "201 is strong Harshad number" do
-    assert Euler.strong_harshad?(201)
-  end
-
-  test "2011 is strong right truncatable Harshad prime" do
-    #assert Euler.strong_right_truncatable_harshad_prime?(2011)
-  end
-
-  test "primes" do
-    assert [2, 3, 5, 7, 11] == Prime.sequence() |> Enum.take(5) |> Enum.to_list()
-  end
-
-  @tag :skip
-  test "one" do
+  test "10^4" do
     assert 90619 == Euler.solve(10_000)
   end
 
-  test "one, but optimised" do
-    assert 90619 == Euler.solve(10_000, :optimised)
-  end
-
-  @tag :skip
   test "10^14" do
-    assert :mu == Euler.solve(100_000_000_000_000, :optimised)
+    assert 696067597313468 == Euler.solve(100_000_000_000_000)
   end
 end

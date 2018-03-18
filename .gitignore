@@ -8,3 +8,5 @@ erl_crash.dump
 .DS_Store
 dialyzer_*
 dialyxir_*
+*/.elixir_ls/
+*/deps/

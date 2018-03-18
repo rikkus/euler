@@ -1,3 +1,7 @@
 %{
+  "exprintf": {:hex, :exprintf, "0.2.1", "b7e895dfb00520cfb7fc1671303b63b37dc3897c59be7cbf1ae62f766a8a0314", [], [], "hexpm"},
+  "exprof": {:hex, :exprof, "0.2.2", "19fead375683f959b45b11dd30d2c48143347970aeabd05b2dde05c50d1f63dc", [], [{:exprintf, "~> 0.2", [hex: :exprintf, repo: "hexpm", optional: false]}], "hexpm"},
+  "primal_ex": {:hex, :primal_ex, "0.1.5", "e514191d1b450f005bc8acc95729c08373fd32a03e92fbfb9da1f059413f0c99", [:mix], [{:rustler, "~> 0.9.0", [hex: :rustler, repo: "hexpm", optional: false]}], "hexpm"},
+  "rustler": {:hex, :rustler, "0.9.0", "6fa87ac78f48f70aa8ecfb6e16b8af41c398989d33de41d292b5581d6a2eeb5a", [], [], "hexpm"},
   "sequences": {:hex, :sequences, "1.1.0", "5795fd8f47e4b7d50b3c8a5dfd45cf0a55b23d351f89dd00b792c76ffb3820b1", [], [], "hexpm"},
 }

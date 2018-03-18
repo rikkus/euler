@@ -10,127 +10,42 @@ defmodule Euler do
   @spec sum_digits(integer) :: integer
   def sum_digits(n), do: Enum.sum(denary_digits(n))
 
-  @spec right_truncatable?(integer) :: boolean
-  def right_truncatable?(n), do: n >= 10
-
-  @spec right_truncate(integer) :: integer
-  def right_truncate(n) do
-    unless right_truncatable?(n), do: raise ArgumentError, message: "Not right-truncatable: #{n}"
-    trunc(n / 10)
-  end
-
-  # @spec recursive_right_truncate(integer) :: [integer, ...]
-  # Dialyzer: "The success typing is (_) -> fun(({'cont',_} | {'halt',_} | {'suspend',_},_)
-  # -> {'done',_} | {'halted',_} | {'suspended',_,fun((_) -> any())})
-  # I don't know if it's possible to determine the actual output type statically.
-  # I think I'll not bother trying to write a spec then!
-  # |> Enum.to_list would give [integer, ...]
-  def recursive_right_truncate(n) do
-    Stream.unfold(n, fn x ->
-      case right_truncatable?(x) do
-        false -> nil
-        true ->
-          q = right_truncate(x) 
-          {q, q}
-      end
-    end)
-  end
-
   ### Definitions
 
-  # "A Harshad or Niven number is a number that is divisible by the sum of its
-  # digits."
   @spec harshad?(integer) :: boolean
   def harshad?(n), do: divisible_by?(n, sum_digits(n))
- 
-  # "Let's call a Harshad number that, while recursively truncating the last
-  # digit, always results in a Harshad number a right truncatable Harshad
-  # number."
-  @spec right_truncatable_harshad?(integer) :: boolean
-  def right_truncatable_harshad?(n) do
-    unless harshad?(n), do: raise("Not harshad: #{n}")
 
-    Enum.all?(recursive_right_truncate(n), &harshad?/1)
-  end
+  @spec strong?(integer) :: boolean
+  def strong?(n), do: prime?(div(n, sum_digits(n)))
 
-  # "Let's call a Harshad number that, when divided by the sum of its digits,
-  # results in a prime a strong Harshad number."
-  @spec strong_harshad?(integer) :: boolean
-  def strong_harshad?(n) do
-    unless harshad?(n), do: raise("Not harshad: #{n}")
-
-    Prime.prime?(div(n, sum_digits(n)))
-  end
-
-  @spec strong_right_truncatable_harshad_number?(integer) :: boolean
-  def strong_right_truncatable_harshad_number?(n) do
-    h = harshad?(n)
-    IO.inspect {:is_harshad, n, h}
-    h && strong_harshad?(n) && right_truncatable_harshad?(n)
-  end
-
-  # "Now take the number 2011 which is prime. When we truncate the last digit
-  # from it we get 201, a strong Harshad number that is also right truncatable.
-  # Let's call such primes strong, right truncatable Harshad primes."
-  # => A strong, right-truncatable Harshad prime is:
-  #  o A prime
-  #  ... which, when right-truncated, results in ...
-  #  o A strong, right-truncatable Harshad number
-  @spec strong_right_truncatable_harshad_prime?(integer) :: boolean
-  def strong_right_truncatable_harshad_prime?(n) do
-    unless Prime.prime?(n), do: raise("Not prime: #{n}")
-    unless right_truncatable?(n), do: raise("Not right-truncatable: #{n}")
-
-    strong_right_truncatable_harshad_number?(right_truncate(n))
-  end
+  def prime?(n), do: :miller_rabin.is_prime(n)
 
   @spec solve(integer) :: integer
   def solve(upper_bound) do
-    Prime.sequence()
-    |> Enum.take_while(fn n -> n < upper_bound end)
-    |> Enum.filter(&right_truncatable?/1)
-    |> Enum.filter(&strong_right_truncatable_harshad_prime?/1)
-    |> Enum.to_list #|> Enum.sum()
+    1..9
+    |> Enum.map(fn n -> sum_srthps({n, harshad?(n), strong?(n)}, upper_bound) end)
+    |> Enum.sum()
   end
 
-  def right_truncatable_harshad_prime_sequence(limit) do
-    1..9 |> Enum.flat_map(fn(n) -> right_truncatable_harshad_sequence({n, false}, limit) end)
-  end
-
-  def right_truncatable_harshad_sequence({n, strong}, limit) do
-    IO.inspect {:right_truncatable_harshad, n}
-    Enum.concat(
-      strong_right_truncatable_harshad_numbers(n, limit),
-      0..9
-      |> Enum.map(fn(digit) -> n * 10 + digit end)
-      |> Enum.filter(fn(new) -> new < limit end)
-      |> Enum.filter(&harshad?/1)
-      |> Enum.flat_map(fn(new) -> right_truncatable_harshad_sequence(new, limit) end)
-    )
-  end
-
-  def strong_right_truncatable_harshad_numbers(base, limit) do
+  def sum_srthps({base, prev_is_harshad, prev_is_strong}, limit) do
     0..9
-    |> Enum.map(fn(digit) -> base * 10 + digit end)
-    |> Enum.filter(fn(new) -> new < limit end)
-    |> Enum.filter(&harshad?/1)
-    |> Enum.filter(&Prime.prime?/1)
-    |> Enum.flat_map(fn(new) -> primes_with_right_truncatable_harshad_base(new, limit) end)
-  end
+    |> Enum.map(fn digit -> base * 10 + digit end)
+    |> Enum.filter(fn n -> n < limit end)
+    |> Enum.map(fn n ->
+      case {prev_is_harshad, prev_is_strong, harshad?(n), prime?(n)} do
 
-  def primes_with_right_truncatable_harshad_base(base, limit) do
-    0..9
-    |> Enum.map(fn(digit) -> base * 10 + digit end)
-    |> Enum.filter(fn(new) -> new < limit end)
-    |> Enum.filter(&Prime.prime?/1)
-  end
+        # We have found a strong, right-truncatable harshard and should continue
+        {true, true, true, true} -> n + sum_srthps({n, true, strong?(n)}, limit)
 
-  @spec solve(integer, :optimised) :: integer
-  def solve(upper_bound, :optimised) do
-    IO.inspect {:solve, upper_bound}
-    right_truncatable_harshad_prime_sequence(upper_bound)
-    |> Enum.sort
-    |> IO.inspect
+        # We have found a strong, right-truncatable harshad but should stop
+        {true, true, false, true} -> n
+
+        # We have found a right-truncatable harshad and should continue
+        {true, _, true, _} -> sum_srthps({n, true, strong?(n)}, limit)
+
+        _ -> 0
+      end
+    end)
     |> Enum.sum
   end
 
