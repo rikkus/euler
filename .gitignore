@@ -2,6 +2,8 @@
 /cover
 /deps
 */_build
+*/cover
+*/deps
 erl_crash.dump
 *.ez
 *.beam
@@ -9,4 +11,3 @@ erl_crash.dump
 dialyzer_*
 dialyxir_*
 */.elixir_ls/
-*/deps/
